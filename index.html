@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<title>Corescript 0 Interpreter</title>
+		<style media="screen">
+			body, html {
+				width: 100%;
+				height: 100%;
+				margin: 0px;
+
+				overflow-x: hidden;
+			}
+
+			textarea {
+				width: 100%;
+				height: 800px;
+				border: transparent;
+				outline: none;
+				border-bottom: 1px solid black;
+				resize: none;
+				font-size: 18px;
+			}
+		</style>
+	</head>
+	<body>
+		<textarea id="code" spellcheck="false">
+# Testing if statements
+var name = Jim
+if name = Jim:yes
+print No
+stop
+:yes
+print Yes
+
+# 1 to 10 program
+var i = 0
+:top
+if i = 10:kill
+set i = (add i 1)
+print (i)
+goto top
+:kill
+</textarea>
+		<br>
+		<button onclick="interface()">Execute</button>
+		<button onclick="clearInterval(loop)">Kill</button>
+	</body>
+	<script type="text/javascript" src="script.js">
+
+	</script>
+</html>
