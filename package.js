@@ -24,12 +24,12 @@ function tryPackage(line, parts, l) {
 				if (first == findColon[0]) {
 					return gotoLine(findColon[1], l);
 				}
-			} else if (parts[2] > "=") {
-				if (Number(first) > Number(findColon[0])) {
+			} else if (parts[2] == "<") {
+				if (Number(first) < Number(findColon[0])) {
 					return gotoLine(findColon[1], l);
 				}
-			} else if (parts[2] < "=") {
-				if (Number(first) == Number(findColon[0])) {
+			} else if (parts[2] == ">") {
+				if (Number(first) > Number(findColon[0])) {
 					return gotoLine(findColon[1], l);
 				}
 			}
@@ -89,15 +89,23 @@ function tryFunction(parts) {
 		case "add":
 		case "rand":
 		case "sub":
+		case "mult":
+		case "div":
 			min = Number(tryVariable(parts[1]));
 			max = Number(tryVariable(parts[2]));
 	}
 
 	switch (parts[0]) {
 		case "add":
-			return max + min;
+			return min + max;
 		case "sub":
-			return max - min;
+			return min - max;
+		case "div":
+			return min / max;
+		case "mult":
+			return min * max;
+		case "rem":
+			return min % max;
 		case "rand":
 			return Math.floor(Math.random() * max) + min;
 

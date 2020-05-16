@@ -32,7 +32,8 @@ function execute(code, returnData) {
 		memory.labels = {};
 		memory.variables = {
 			"space": " ",
-			"blank": ""
+			"blank": "",
+			"array": []
 		};
 
 		// Pre executing label finding
