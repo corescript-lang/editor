@@ -1,0 +1,53 @@
+body, html {
+	width: 100%;
+	height: 100%;
+	margin: 0px;
+
+	overflow-x: hidden;
+}
+
+textarea {
+	left: 2.5%;
+}
+
+textarea, #input, #terminal {
+	font-size: 18px;
+	color: #f0f0f0;
+}
+
+textarea, #terminal {
+	width: 45%;
+	height: 95%;
+	position: absolute;
+	top: 2.5%;
+
+	border: 2px solid black;
+	outline: none;
+	resize: none;
+
+	background: #464c4f;
+}
+
+#terminal, #input {
+	font-family: monospace;
+}
+
+#terminal {
+	right: 2.5%;
+}
+
+#terminal .line {
+	display: block;
+}
+
+#content {
+	margin: 0;
+}
+
+#input {
+	outline: none;
+    background: transparent;
+    border: none;
+
+	height: 20px;
+}

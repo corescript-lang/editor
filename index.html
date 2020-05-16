@@ -3,25 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Corescript 0 Interpreter</title>
-		<style media="screen">
-			body, html {
-				width: 100%;
-				height: 100%;
-				margin: 0px;
-
-				overflow-x: hidden;
-			}
-
-			textarea {
-				width: 100%;
-				height: 800px;
-				border: transparent;
-				outline: none;
-				border-bottom: 1px solid black;
-				resize: none;
-				font-size: 18px;
-			}
-		</style>
+		<link rel="stylesheet" href="style.css">
 	</head>
 	<body>
 		<textarea id="code" spellcheck="false">
@@ -42,11 +24,16 @@ print (i)
 goto top
 :kill
 </textarea>
-		<br>
+		<div id="terminal">
+			<p id="content"></p>
+			<span id="beforeInput"></span><input id="input">
+		</div>
+
 		<button onclick="interface()">Execute</button>
-		<button onclick="clearInterval(loop)">Kill</button>
+		<button onclick="clearInterval(loop);terminal.reset();">Kill</button>
 	</body>
-	<script type="text/javascript" src="script.js">
+	<script type="text/javascript" src="script.js"></script>
+	<script type="text/javascript" src="terminal.js"></script>
 
 	</script>
 </html>

@@ -1,3 +1,4 @@
+var loop;
 var commandData = {
 	"print": 1,
 	"var": 3,
@@ -8,13 +9,17 @@ var commandData = {
 	"set": 3
 }
 
-var loop;
+var user = document.getElementById("code");
+var overlay = document.getElementById("overlay");
 
 function interface() {
-	var user = document.getElementById("code");
-	user = user.value.split("\n");
+	var userSplit = user.value.split("\n");
 
-	execute(user);
+	execute(userSplit, [false]);
+}
+
+function handleTextarea() {
+	overlay.innerHTML = user.value;
 }
 
 var memory = {
@@ -22,26 +27,37 @@ var memory = {
 	labels: {}
 }
 
-function execute(code) {
-	memory.labels = {};
-	memory.variables = {
-		"space": " ",
-		"blank": ""
-	};
+// Return to a line (memory set required)
+// [true, 4]
+function execute(code, returnData) {
+	var l;
+	if (!returnData[0]) {
+		memory.labels = {};
+		memory.variables = {
+			"space": " ",
+			"blank": ""
+		};
 
-	// Add in labels
-	for (var l = 0; l < code.length; l++) {
-		if (code[l][0] == ':') {
-			memory.labels[code[l].substring(1)] = l;
+		// Add in labels
+		for (var l = 0; l < code.length; l++) {
+			if (code[l][0] == ':') {
+				memory.labels[code[l].substring(1)] = l;
+			}
 		}
+
+		l = 0;
+	} else {
+		l = returnData[1];
 	}
 
-	var l = 0;
-	loop = setInterval(function() {
-		if (l == code.length) {
-			clearInterval(loop);
-			return;
-		}
+	// var l = 0;
+	// loop = setInterval(function() {
+	// 	if (l == code.length) {
+	// 		clearInterval(loop);
+	// 		return;
+	// 	}
+
+	for (l = l; l < code.length; l++) {
 
 		var parsed = parseUntil(code[l]);
 		var parts = parsed.parts;
@@ -58,7 +74,7 @@ function execute(code) {
 			}
 
 			if (test["print"]) {
-				console.log(parseString(parts[1]));
+				terminal.message(parseString(parts[1]));
 			} else if (test["if"]) {
 				var first = parseRaw(parts[1]);
 				var findColon = colonData(parseString(parts[3]));
@@ -71,7 +87,13 @@ function execute(code) {
 				if (test["var"]) {
 					memory.variables[parts[1]] = parseString(stringParsed);
 				} else if (test["input"]) {
-					memory.variables[parts[1]] = prompt(stringParsed);
+					terminal.ask(stringParsed, function(output) {
+						memory.variables[parts[1]] = output;
+						execute(user.value.split("\n"), [true, l + 1]);
+
+					});
+
+					return;
 				} else if (test["set"]) {
 					memory.variables[parts[1]] = parseString(stringParsed);
 				}
@@ -80,12 +102,14 @@ function execute(code) {
 			} else if (test["stop"]) {
 				return;
 			} else {
-				console.log("error", code[l]);
+				terminal.message("error", code[l]);
 			}
 		}
 
-		l++
-	}, 1);
+	//	l++
+	//}, 1);
+
+	}
 }
 
 function parseRaw(raw) {
