@@ -6,24 +6,7 @@
 		<link rel="stylesheet" href="style.css">
 	</head>
 	<body>
-		<textarea id="code" spellcheck="false">
-# Testing if statements
-var name = Jim
-if name = Jim:yes
-print No
-stop
-:yes
-print Yes
-
-# 1 to 10 program
-var i = 0
-:top
-if i = 10:kill
-set i = (add i 1)
-print (i)
-goto top
-:kill
-</textarea>
+		<textarea id="code" spellcheck="false"></textarea>
 		<div id="terminal">
 			<p id="content"></p>
 			<span id="beforeInput"></span><input id="input">
@@ -32,8 +15,7 @@ goto top
 		<button onclick="interface()">Execute</button>
 		<button onclick="clearInterval(loop);terminal.reset();">Kill</button>
 	</body>
+
 	<script type="text/javascript" src="script.js"></script>
 	<script type="text/javascript" src="terminal.js"></script>
-
-	</script>
 </html>

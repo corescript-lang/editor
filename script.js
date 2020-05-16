@@ -13,7 +13,7 @@ var user = document.getElementById("code");
 var overlay = document.getElementById("overlay");
 
 function interface() {
-	var userSplit = user.value.split("\n");
+	var userSplit = getUserCode();
 
 	execute(userSplit, [false]);
 }
@@ -41,7 +41,10 @@ function execute(code, returnData) {
 		// Add in labels
 		for (var l = 0; l < code.length; l++) {
 			if (code[l][0] == ':') {
-				memory.labels[code[l].substring(1)] = l;
+				memory.labels[code[l].substring(1)] = {
+					line: l,
+					lastUsed: 0
+				};
 			}
 		}
 
@@ -70,6 +73,7 @@ function execute(code, returnData) {
 				"input": parts[0] == "input",
 				"stop": parts[0] == "stop",
 				"goto": parts[0] == "goto",
+				"return": parts[0] == "return",
 				"set": parts[0] == "set"
 			}
 
@@ -80,17 +84,17 @@ function execute(code, returnData) {
 				var findColon = colonData(parseString(parts[3]));
 
 				if (first == findColon[0]) {
-					l = memory.labels[findColon[1]];
+					l = gotoLine(findColon[1], l);
 				}
 			} else if (parts[2] == '=') {
 				var stringParsed = parseString(parts[3]);
 				if (test["var"]) {
 					memory.variables[parts[1]] = parseString(stringParsed);
 				} else if (test["input"]) {
+					// Call back to the interpreter
 					terminal.ask(stringParsed, function(output) {
 						memory.variables[parts[1]] = output;
-						execute(user.value.split("\n"), [true, l + 1]);
-
+						execute(getUserCode(), [true, l + 1]);
 					});
 
 					return;
@@ -98,9 +102,11 @@ function execute(code, returnData) {
 					memory.variables[parts[1]] = parseString(stringParsed);
 				}
 			} else if (test["goto"]) {
-				l = memory.labels[parts[1]];
+				l = gotoLine(parts[1], l);
 			} else if (test["stop"]) {
 				return;
+			} else if (test["return"]) {
+				l = memory.labels[parts[1]].lastUsed;
 			} else {
 				terminal.message("error", code[l]);
 			}
@@ -110,6 +116,16 @@ function execute(code, returnData) {
 	//}, 1);
 
 	}
+}
+
+function gotoLine(name, l) {
+	var data = memory.labels[name];
+	data.lastUsed = l;
+	return data.line;
+}
+
+function getUserCode() {
+	return user.value.split("\n");
 }
 
 function parseRaw(raw) {
@@ -163,7 +179,7 @@ function tryVariable(string, tryBit) {
 			return tryVariable;
 		}
 	} else {
-		return string
+		return string;
 	}
 }
 
@@ -205,7 +221,7 @@ function parseUntil(string) {
 	var reading = "";
 	var addPart = 0;
 
-	// A messy solution for
+	// A messy solution for telling checker to ignore
 	var until = -1;
 
 	if (string == "" || string[0] == '#') {
@@ -228,7 +244,7 @@ function parseUntil(string) {
 				reading += string[c];
 			}
 
-
+			// Add the read part to the parts array
 			if (addPart != 0 && string.length != 0) {
 				command.parts.push(reading);
 
