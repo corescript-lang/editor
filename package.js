@@ -20,10 +20,21 @@ function tryPackage(line, parts, l) {
 			var findColon = colonData(parseString(parts[3]));
 
 			// Find things inbetween colon ("hello:top")
-			if (first == findColon[0]) {
-				return gotoLine(findColon[1], l);
+			if (parts[2] == "=") {
+				if (first == findColon[0]) {
+					return gotoLine(findColon[1], l);
+				}
+			} else if (parts[2] > "=") {
+				if (Number(first) > Number(findColon[0])) {
+					return gotoLine(findColon[1], l);
+				}
+			} else if (parts[2] < "=") {
+				if (Number(first) == Number(findColon[0])) {
+					return gotoLine(findColon[1], l);
+				}
 			}
-			break;
+
+			return l;
 
 		case "var":
 			memory.variables[parts[1]] = parseString(stringParsed);
@@ -48,12 +59,18 @@ function tryPackage(line, parts, l) {
 		case "return":
 			return memory.labels[parts[1]].lastUsed;
 		default:
-			if (line.substring(lineLength - 2) == "++") {
-				// I don't like taking advantage of JS's recursive functions,
-				// But I may as well..
-				var toIncrement = line.substring(0, lineLength - 2);
+			var testLastTwo = line.substring(lineLength - 2);
+			var toIncrement = line.substring(0, lineLength - 2);
+
+			// I don't like taking advantage of JS's recursive functions,
+			// But I may as well..
+			if (testLastTwo == "++") {
 				executeLine([
 					"set " + toIncrement + " = (add " + toIncrement + " 1)"
+				], 0);
+			} else if (testLastTwo == "--") {
+				executeLine([
+					"set " + toIncrement + " = (sub " + toIncrement + " 1)"
 				], 0);
 			} else {
 				terminal.message("Error on line" + l + ": " + line);
