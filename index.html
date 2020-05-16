@@ -6,7 +6,16 @@
 		<link rel="stylesheet" href="style.css">
 	</head>
 	<body>
-		<textarea id="code" spellcheck="false"></textarea>
+		<textarea id="code" spellcheck="false" rows="0"># Count from 1-10
+var i = 0
+:top
+if i = 10:end
+i++
+print (i)
+goto top
+:end
+stop
+</textarea>
 		<div id="terminal">
 			<p id="content"></p>
 			<span id="beforeInput"></span><input id="input">
@@ -17,5 +26,6 @@
 	</body>
 
 	<script type="text/javascript" src="script.js"></script>
+	<script type="text/javascript" src="package.js"></script>
 	<script type="text/javascript" src="terminal.js"></script>
 </html>

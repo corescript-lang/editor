@@ -23,18 +23,28 @@ var terminal = {
 
 	return: function() {
 		terminal.message(terminal.beforeInput.innerHTML + terminal.input.value);
-		terminal.input.value = "";
+
 	},
 
+	// Reset default input handler, prompt text,
 	reset: function() {
 		terminal.return();
 		terminal.beforeInput.innerHTML = terminal.defaultShell;
 
 		terminal.input.onkeydown = function() {
 			if (event.key == "Enter") {
+				terminal.return();
+
 				if (this.value == "run") {
-					terminal.return();
 					execute(getUserCode(), [false]);
+				} else if (this.value == "fast") {
+					settings.fastMode = true;
+					terminal.message("Speed set to fast.");
+				} else if (this.value == "slow") {
+					settings.fastMode = false;
+					terminal.message("Speed set to slow.");
+				} else if (this.value == "memory") {
+					terminal.message(JSON.stringify(memory));
 				}
 			}
 		};
@@ -47,7 +57,6 @@ window.onload = function () {
 		terminal.input.focus();
 	}
 
-	// Reset default input handler, prompt text,
 	terminal.reset();
 
 	terminal.message(`

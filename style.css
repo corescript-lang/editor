@@ -30,6 +30,7 @@ textarea, #terminal {
 
 #terminal, #input {
 	font-family: monospace;
+	cursor: text;
 }
 
 #terminal {
