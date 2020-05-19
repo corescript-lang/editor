@@ -36,7 +36,9 @@ var terminal = {
 				terminal.return();
 
 				if (this.value == "run") {
-					execute(getUserCode(), [false]);
+					interpreter.run(getUserCode(), [false]);
+				} else if (this.value == "compile") {
+					compile(getUserCode());
 				} else if (this.value == "fast") {
 					settings.fastMode = true;
 					terminal.message("Speed set to fast.");

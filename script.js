@@ -1,97 +1,143 @@
 var user = document.getElementById("code");
 var overlay = document.getElementById("overlay");
 
-var commandData = {
-	"print": 1,
-	"var": 3,
-	"if": 3,
-	"not": 3,
-	"input": 3,
-	"goto": 1,
-	"set": 3
+// This is a minimal object to store
+// data for both the interpreter and compiler.
+// It is also used for languages.
+var language = {
+	"print": {
+		string: true,
+		t: "print",
+		min: 2
+	},
+	"var": {
+		string: true,
+		t: "print",
+		min: 4
+	},
+	"if": {
+		string: true,
+		t: "if",
+		min: 4
+	},
+	"not": {
+		string: true,
+		t: "not",
+		min: 4
+	},
+	"input": {
+		string: true,
+		t: "input",
+		min: 4
+	},
+	"goto": {
+		string: true,
+		t: "goto",
+		min: 2
+	},
+	"set": {
+		string: true,
+		t: "set",
+		min: 4
+	},
 }
 
+// Fastmode uses a JS setInterval loop vs a standard for loop.
+// false is safer for recursion. (only for interpreter)
 var settings = {
 	fastMode: true
 }
 
 // These are global so that external functions
-// Can access them.
-var loop;
-var memory = {
+// Can access them. (only for interpreter)
+var interpreter = {
 	variables: {},
 	labels: {},
-	gotoTimes: 0
-}
+	gotoTimes: 0,
+	loop: 0,
 
-// Execute multiple lines, with a memory reset or not.
-// returnData: Return to a line (memory set required ([true, 4]))
-function execute(code, returnData) {
-	var l;
-	if (!returnData[0]) {
-		memory.labels = {};
-		memory.variables = {
-			"space": " ",
-			"blank": "",
-			"array": []
-		};
+	// Interpret a single line, goes to the interpreter.
+	executeLine: function(code, l) {
+		var parsed = parseUntil(code[l]);
+		var parts = parsed.parts;
 
-		// Pre executing label finding
-		for (var l = 0; l < code.length; l++) {
-			if (code[l][0] == ':') {
-				memory.labels[code[l].substring(1)] = {
-					line: l,
-					lastUsed: 0
-				};
-			}
+		if (parsed.ignore) {
+			return l;
+		} else {
+			return tryPackage(code[l], parts, l);
 		}
+	},
 
-		l = 0;
-	} else {
-		// Return with same memory, data, from parameter
-		l = returnData[1];
-	}
+	gotoLine: function(name, l) {
+		var data = interpreter.labels[name];
+		data.lastUsed = l;
+		interpreter.gotoTimes++;
+		return data.line;
+	},
 
-	if (settings.fastMode) {
-		for (l = l; l < code.length; l++) {
-			l = executeLine(code, l);
-
-			if (memory.gotoTimes > 500) {
-				break;
-				terminal.write("Goto exceeded 500, stopping program for safety.");
-			}
-		}
-	} else {
-		loop = setInterval(function() {
-			if (l == code.length) {
-				clearInterval(loop);
-				return;
+	// Attempt to grab a variable, if not, return false
+	tryVariable: function(string, tryBit) {
+		var tryVariable = interpreter.variables[string];
+		if (tryVariable != undefined) {
+			if (tryBit != null) {
+				return tryVariable[tryBit[2]];
 			} else {
-				l = executeLine(code, l);
-				l++;
+				return tryVariable;
 			}
-		}, 1);
+		} else {
+			return string;
+		}
+	},
+
+	// Execute multiple lines, with a interpreter reset or not.
+	// returnData: Return to a line (interpreter set required ([true, 4]))
+	run: function(code, returnData) {
+		var l;
+		if (!returnData[0]) {
+			interpreter.labels = {};
+			interpreter.variables = {
+				"space": " ",
+				"blank": "",
+				"array": []
+			};
+
+			// Pre executing label finding
+			for (l = 0; l < code.length; l++) {
+				if (code[l][0] == ':') {
+					interpreter.labels[code[l].substring(1)] = {
+						line: l,
+						lastUsed: 0
+					};
+				}
+			}
+
+			l = 0;
+		} else {
+			// Return with same interpreter, data, from parameter
+			l = returnData[1];
+		}
+
+		if (settings.fastMode) {
+			for (l = l; l < code.length; l++) {
+				l = interpreter.executeLine(code, l);
+
+				if (interpreter.gotoTimes > 500) {
+					break;
+					terminal.write("Goto exceeded 500, stopping program for safety.");
+				}
+			}
+		} else {
+			interpreter.loop = setInterval(function() {
+				if (l == code.length) {
+					clearInterval(loop);
+					return;
+				} else {
+					l = interpreter.executeLine(code, l);
+					l++;
+				}
+			}, 1);
+		}
 	}
-}
-
-// Execute a single line
-function executeLine(code, l) {
-	var parsed = parseUntil(code[l]);
-	var parts = parsed.parts;
-
-	if (parsed.ignore) {
-		return l;
-	} else {
-		return tryPackage(code[l], parts, l);
-	}
-}
-
-// Function for executing to not repeat myself
-function gotoLine(name, l) {
-	var data = memory.labels[name];
-	data.lastUsed = l;
-	memory.gotoTimes++;
-	return data.line;
 }
 
 // Grab an array via the DOM
@@ -99,43 +145,7 @@ function getUserCode() {
 	return user.value.split("\n");
 }
 
-// Parse raw statements, like trying functions,
-function parseRaw(raw) {
-	var bitRegex = /(.+)\[([0-9a-zA-Z]+)\]/gm;
-
-	// Try to find [0] selector
-	var tryBit = bitRegex.exec(raw);
-	if (tryBit != null) {
-		raw = tryVariable(tryBit[1]);
-		raw = raw[tryVariable(tryBit[2])];
-		return raw;
-	}
-
-	// Try to parse it as a variable
-	var tryFunctionParts = parseUntil(raw).parts;
-	var tryOutput = tryFunction(tryFunctionParts);
-
-	if (!tryOutput) {
-		return tryVariable(raw, tryBit);
-	} else {
-		return tryOutput;
-	}
-}
-
-// Attempt to grab a variable, if not, return false
-function tryVariable(string, tryBit) {
-	var tryVariable = memory.variables[string];
-	if (tryVariable != undefined) {
-		if (tryBit != null) {
-			return tryVariable[tryBit[2]];
-		} else {
-			return tryVariable;
-		}
-	} else {
-		return string;
-	}
-}
-
+// Parse entire string
 function parseString(string) {
 	var parseRegex = /\(([^\(\)]+)\)/gm;
 
@@ -146,7 +156,36 @@ function parseString(string) {
 			return string;
 		}
 
-		string = string.replace(execute[0], parseRaw(execute[1]));
+		string = string.replace(execute[0], interpreter.parseRaw(execute[1]));
+	}
+}
+
+// Parse raw functions, or varibles, without parenthesis.
+// Requires a variable parser and a function parser, so it
+// Can be used for compiling and interpreting.
+function parseRaw(raw, variableParser, functionParser) {
+	var bitRegex = /(.+)\[([0-9a-zA-Z]+)\]/gm;
+
+	// Try to find [0] selector
+	var tryBit = bitRegex.exec(raw);
+	if (tryBit != null) {
+		// Try to get the variable
+		raw = variableParser(tryBit[1]);
+
+		// Try to get variable inside the []
+		raw = raw[variableParser(tryBit[2])];
+
+		return raw;
+	}
+
+	// Try to parse it as a variable
+	var tryFunctionParts = parseUntil(raw).parts;
+	var tryOutput = functionParser(tryFunctionParts);
+
+	if (!tryOutput) {
+		return functionParser(raw, tryBit);
+	} else {
+		return tryOutput;
 	}
 }
 
@@ -181,7 +220,10 @@ function parseUntil(string) {
 		command.ignore = true;
 	} else {
 		for (var c = 0; c < string.length; c++) {
+
+			// We only have to parse by space for this
 			if (string[c] == ' ') {
+				// Check if we are in the string
 				if (command.parts.length != until) {
 					addPart = 2;
 				}
@@ -201,10 +243,19 @@ function parseUntil(string) {
 			if (addPart != 0 && string.length != 0) {
 				command.parts.push(reading);
 
+				// We can use the minimum required parameters - 1
+				// To check for the string, since the string is
+				// always at the last part of the line
 				if(command.parts.length == 1) {
-					until = commandData[reading];
+
+
+					var tryFindCommand = language[reading];
+					if (tryFindCommand != undefined) {
+						until = language[reading].min - 1;
+					}
 				}
 
+				// Reset for next part
 				reading = "";
 				addPart = 0;
 			}
@@ -214,10 +265,11 @@ function parseUntil(string) {
 	return command;
 }
 
+// Some interface handlers
 function interface() {
 	var userSplit = getUserCode();
 
-	execute(userSplit, [false]);
+	interpreter.run(userSplit, [false]);
 }
 
 function handleTextarea() {
