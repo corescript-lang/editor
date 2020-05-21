@@ -24,6 +24,40 @@ function compileCommands(commands, config) {
 	var toGenerate = [];
 	var height = 2;
 
+	// If variables/data is used, create a "corescript" storage object
+	if (config.requires["corescript"]) {
+		toGenerate.push({
+			text:`data modify storage minecraft:0 corescript set value {"variables":{}}`,
+			type: "regular",
+			heightAdd: 0,
+			comment: "-Init variable"
+		});
+	}
+
+	// Create a "math" and "temp" scoreboard for math
+	if (config.requires.math) {
+		toGenerate.push({
+			text:`scoreboard objectives add temp dummy`,
+			type: "chain",
+			heightAdd: 0,
+			comment: "-Init temp"
+		});
+
+		toGenerate.push({
+			text:`scoreboard objectives add math dummy`,
+			type: "chain",
+			heightAdd: 0,
+			comment: "-Init math"
+		});
+	}
+
+	// If both are not used, then set type to regular.
+	// This is not a perfect solution, and type will be calculated
+	// dynamically in the future.
+	if (!config.requires.math && !config.requires.corescript) {
+		commands[0].type = "regular";
+	}
+
 	// Add a stone button for easy activation
 	toGenerate.push(`setblock ~ ~` + height + ` ~1 stone_button[facing=south]`);
 
@@ -53,6 +87,33 @@ function compileCommands(commands, config) {
 		}
 
 		height++;
+	}
+
+	// Delete everything we created so that it doesn't
+	// clutter the world.
+	if (config.requires.math) {
+		toGenerate.push({
+			text:`scoreboard objectives add temp dummy`,
+			type: "chain",
+			heightAdd: 0,
+			comment: "-Init temp"
+		});
+
+		toGenerate.push({
+			text:`scoreboard objectives add math dummy`,
+			type: "chain",
+			heightAdd: 0,
+			comment: "-Init math"
+		});
+	}
+
+	if (config.requires.corescript) {
+		toGenerate.push({
+			text:`/data remove storage minecraft:0 corescript`,
+			type: "chain",
+			heightAdd: 0,
+			comment: "-Deinit temp"
+		});
 	}
 
 	return generate(toGenerate);

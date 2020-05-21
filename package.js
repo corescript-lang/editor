@@ -3,9 +3,11 @@
 var packages = [
 	{
 		execute: function(line, parts, l) {
+			var lineLength = line.length;
+
+			// If case, or input, parse third part
 			var stringParsed;
 			switch (parts[0]) {
-				// If case, or input, parse third part
 				case "var":
 				case "input":
 				case "set":
@@ -16,73 +18,83 @@ var packages = [
 			switch (parts[0]) {
 				case language["print"].t:
 					terminal.message(parseString(parts[1]));
-					break;
+					return [l];
 
 				case language["if"].t:
-					var first = parseRaw(parts[1]);
+					var first = parseRaw(parts[1], interpreter.tryVariable, tryFunction);
 					var findColon = colonData(parseString(parts[3]));
 
 					// Find things inbetween colon ("hello:top")
 					if (parts[2] == "=") {
 						if (first == findColon[0]) {
-							return gotoLine(findColon[1], l);
+							console.log(findColon[1], l);
+							return interpreter.gotoLine(findColon[1], l);
 						}
 					} else if (parts[2] == "<") {
 						if (Number(first) < Number(findColon[0])) {
-							return gotoLine(findColon[1], l);
+							return interpreter.gotoLine(findColon[1], l);
 						}
 					} else if (parts[2] == ">") {
 						if (Number(first) > Number(findColon[0])) {
-							return gotoLine(findColon[1], l);
+							return interpreter.gotoLine(findColon[1], l);
 						}
 					}
 
-					return l;
+					return [l];
 
 				case language["var"].t:
-					memory.variables[parts[1]] = parseString(stringParsed);
-					break;
+					interpreter.variables[parts[1]] = parseString(stringParsed);
+					return [l];
 
 				case language["input"].t:
 					// Create call back to the interpreter
 					terminal.ask(stringParsed, function(output) {
-						memory.variables[parts[1]] = output;
+						interpreter.variables[parts[1]] = output;
 						execute(getUserCode(), [true, l + 1]);
 					});
 
-					return;
+					return [l];
 
 				case language["set"].t:
-					memory.variables[parts[1]] = parseString(stringParsed);
-					break;
+					interpreter.variables[parts[1]] = parseString(stringParsed);
+					return [l];
 
 				case language["goto"].t:
-					return gotoLine(parts[1], l);
+					return interpreter.gotoLine(parts[1], l);
 
 				case language["stop"].t:
-					return;
+					return [l];
 
 				case language["return"].t:
-					return memory.labels[parts[1]].lastUsed;
+					return interpreter.labels[parts[1]].lastUsed;
 
 				default:
+					// This is less spahgetti code than the last code,
+					// But still not.. perfect.
 					var testLastTwo = line.substring(lineLength - 2);
 					var toIncrement = line.substring(0, lineLength - 2);
 
 					// I don't like taking advantage of JS's recursive functions,
 					// But I may as well..
 					if (testLastTwo == "++") {
-						executeLine([
+						interpreter.executeLine([
 							"set " + toIncrement + " = (add " + toIncrement + " 1)"
 						], 0);
+
+						return [l];
 					} else if (testLastTwo == "--") {
-						executeLine([
+						interpreter.executeLine([
 							"set " + toIncrement + " = (sub " + toIncrement + " 1)"
 						], 0);
+
+						return [l];
 					} else {
-						return 0;
+						break;
 					}
 			}
+
+			// Nothing worked, signal error
+			return [-1, "comd err"];
 		}
 	}
 ]
@@ -95,8 +107,9 @@ function tryPackage(line, parts, l) {
 
 		// Package worked, return
 		// Else, try the next one.
-		if (tryPackage != 0) {
-			return l;
+		if (tryPackage != -1) {
+			console.log(line, parts, l);
+			return tryPackage;
 		}
 	}
 
@@ -116,8 +129,8 @@ function tryFunction(parts) {
 		case "sub":
 		case "mult":
 		case "div":
-			min = Number(tryVariable(parts[1]));
-			max = Number(tryVariable(parts[2]));
+			min = Number(interpreter.tryVariable(parts[1]));
+			max = Number(interpreter.tryVariable(parts[2]));
 	}
 
 	switch (parts[0]) {

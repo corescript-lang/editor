@@ -12,7 +12,7 @@ var language = {
 	},
 	"var": {
 		string: true,
-		t: "print",
+		t: "var",
 		min: 4
 	},
 	"if": {
@@ -39,6 +39,16 @@ var language = {
 		string: true,
 		t: "set",
 		min: 4
+	},
+	"stop": {
+		string: false,
+		t: "stop",
+		min: 1
+	},
+	"return": {
+		string: true,
+		t: "return",
+		min: 2
 	},
 }
 
@@ -69,10 +79,15 @@ var interpreter = {
 	},
 
 	gotoLine: function(name, l) {
-		var data = interpreter.labels[name];
-		data.lastUsed = l;
 		interpreter.gotoTimes++;
-		return data.line;
+
+		var data = interpreter.labels[name];
+		if (data === undefined) {
+			return [-1, "Label not found"];
+		}
+
+		data.lastUsed = l;
+		return [data.line];
 	},
 
 	// Attempt to grab a variable, if not, return false
@@ -149,6 +164,7 @@ function getUserCode() {
 function parseString(string) {
 	var parseRegex = /\(([^\(\)]+)\)/gm;
 
+	// Execute until no more variables are found
 	var execute = [1];
 	while (execute.length != 0) {
 		execute = parseRegex.exec(string);
@@ -156,7 +172,12 @@ function parseString(string) {
 			return string;
 		}
 
-		string = string.replace(execute[0], interpreter.parseRaw(execute[1]));
+		string = string.replace(execute[0], parseRaw(
+			execute[1],
+			interpreter.tryVariable,
+			tryFunction
+		));
+		console.log(execute.length);
 	}
 }
 
@@ -183,7 +204,7 @@ function parseRaw(raw, variableParser, functionParser) {
 	var tryOutput = functionParser(tryFunctionParts);
 
 	if (!tryOutput) {
-		return functionParser(raw, tryBit);
+		return variableParser(raw, tryBit);
 	} else {
 		return tryOutput;
 	}
