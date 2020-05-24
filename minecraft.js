@@ -7,6 +7,8 @@ function generate(commands) {
 		`{id:command_block_minecart,Command:'kill @e[type=command_block_minecart,distance=..1]'}]}]}]}`
 	]
 
+	// Add in the first obj part, then the next obj part,
+	// for reach command.
 	var generated = "";
 	generated += generateCommand[0];
 	for (var i = 0; i < commands.length; i++) {
@@ -15,8 +17,8 @@ function generate(commands) {
 		generated += generateCommand[2];
 	}
 
+	// Add in last part, the one that kills the minecarts
 	generated += generateCommand[3];
-
 	return generated;
 }
 
@@ -24,54 +26,35 @@ function compileCommands(commands, config) {
 	var toGenerate = [];
 	var height = 2;
 
-	// If variables/data is used, create a "corescript" storage object
-	if (config.requires["corescript"]) {
-		toGenerate.push({
-			text:`data modify storage minecraft:0 corescript set value {"variables":{}}`,
-			type: "regular",
-			heightAdd: 0,
-			comment: "-Init variable"
-		});
-	}
-
-	// Create a "math" and "temp" scoreboard for math
-	if (config.requires.math) {
-		toGenerate.push({
-			text:`scoreboard objectives add temp dummy`,
-			type: "chain",
-			heightAdd: 0,
-			comment: "-Init temp"
-		});
-
-		toGenerate.push({
-			text:`scoreboard objectives add math dummy`,
-			type: "chain",
-			heightAdd: 0,
-			comment: "-Init math"
-		});
-	}
-
-	// If both are not used, then set type to regular.
-	// This is not a perfect solution, and type will be calculated
-	// dynamically in the future.
-	if (!config.requires.math && !config.requires.corescript) {
-		commands[0].type = "regular";
-	}
-
 	// Add a stone button for easy activation
+	// TODO: Add as option
 	toGenerate.push(`setblock ~ ~` + height + ` ~1 stone_button[facing=south]`);
 
+	var type;
 	for (var c = 0; c < commands.length; c++) {
+
+		// In a nutshell, if c is zero, then it will always be regular.
+		// If the last one was a jump (more than 0), then set it to regular,
+		// If not, then it will be chain.
+		if (c == 0) {
+			type = "regular";
+		} else {
+			if (commands[c].heightAdd > 0) {
+				type = "regular";
+			} else {
+				type = "chain";
+			}
+		}
 
 		// Use four since JS counts it, and minecraft does too.
 		commands[c].text = commands[c].text.replace(/\"/gm, '\\\\"');
 
 		// Calculate NBT, ID for chain/regular
 		var nbt, id;
-		if (commands[c].type == "chain") {
+		if (type == "chain") {
 			nbt = `{Command:"` + commands[c].text + `", auto: 1b}`
 			id = `chain_command_block`;
-		} else if (commands[c].type == "regular") {
+		} else if (type == "regular") {
 			nbt = `{Command:"` + commands[c].text + `"}`
 			id = `command_block`;
 		}
@@ -89,32 +72,6 @@ function compileCommands(commands, config) {
 		height++;
 	}
 
-	// Delete everything we created so that it doesn't
-	// clutter the world.
-	if (config.requires.math) {
-		toGenerate.push({
-			text:`scoreboard objectives add temp dummy`,
-			type: "chain",
-			heightAdd: 0,
-			comment: "-Init temp"
-		});
-
-		toGenerate.push({
-			text:`scoreboard objectives add math dummy`,
-			type: "chain",
-			heightAdd: 0,
-			comment: "-Init math"
-		});
-	}
-
-	if (config.requires.corescript) {
-		toGenerate.push({
-			text:`/data remove storage minecraft:0 corescript`,
-			type: "chain",
-			heightAdd: 0,
-			comment: "-Deinit temp"
-		});
-	}
-
+	console.log(toGenerate)
 	return generate(toGenerate);
 }

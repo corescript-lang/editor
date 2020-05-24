@@ -69,7 +69,7 @@ var packages = [
 					return interpreter.labels[parts[1]].lastUsed;
 
 				default:
-					/*// This is less spahgetti code than the last code,
+					// This is less spahgetti code than the last code,
 					// But still not.. perfect.
 					var testLastTwo = line.substring(lineLength - 2);
 					var toIncrement = line.substring(0, lineLength - 2);
@@ -88,7 +88,7 @@ var packages = [
 						], 0);
 
 						return [l];
-					} else */{
+					} else {
 						break;
 					}
 			}

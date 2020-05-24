@@ -24,7 +24,7 @@ stop
 var i = 0
 :countLoop
 if i = 10:kill1
-set i = (add i 1)
+i++
 print (i)
 goto countLoop
 :kill1
@@ -65,6 +65,7 @@ return beer
 			<span id="beforeInput"></span><input id="input">
 		</div>
 
+		<button onclick="interface()">Execute</button>
 		<button onclick="clearInterval(memory.loop);terminal.reset();">Kill</button>
 	</body>
 
