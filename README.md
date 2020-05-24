@@ -18,8 +18,7 @@ but right now, it only has one, a Corescript to Command Block
 compiler. Only very simple things work at the moment, but a simple test  
 like this will work (1.15 only):
 ```
-var name = Jim
 :top
-printv name
+print hello
 goto top
 ```
