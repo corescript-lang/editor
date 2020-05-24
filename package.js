@@ -27,7 +27,6 @@ var packages = [
 					// Find things inbetween colon ("hello:top")
 					if (parts[2] == "=") {
 						if (first == findColon[0]) {
-							console.log(findColon[1], l);
 							return interpreter.gotoLine(findColon[1], l);
 						}
 					} else if (parts[2] == "<") {
@@ -60,13 +59,13 @@ var packages = [
 					return [l];
 
 				case language["goto"].t:
-					return interpreter.gotoLine(parts[1], l);
+					return [interpreter.gotoLine(parts[1], l)];
 
 				case language["stop"].t:
-					return [l];
+					return [-1, "kill"];
 
 				case language["return"].t:
-					return interpreter.labels[parts[1]].lastUsed;
+					return [interpreter.labels[parts[1]].lastUsed];
 
 				default:
 					// This is less spahgetti code than the last code,
@@ -107,8 +106,7 @@ function tryPackage(line, parts, l) {
 
 		// Package worked, return
 		// Else, try the next one.
-		if (tryPackage != -1) {
-			console.log(line, parts, l);
+		if (tryPackage[0] != -1 || tryPackage[1] == "kill") {
 			return tryPackage;
 		}
 	}
@@ -116,7 +114,7 @@ function tryPackage(line, parts, l) {
 	// No packages worked, throw unknown error
 	terminal.message("Error on line " + l + ": " + line);
 
-	return l;
+	return [l];
 }
 
 // Try to parse a raw "function"

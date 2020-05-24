@@ -72,7 +72,7 @@ var interpreter = {
 		var parts = parsed.parts;
 
 		if (parsed.ignore) {
-			return l;
+			return [l];
 		} else {
 			return tryPackage(code[l], parts, l);
 		}
@@ -132,13 +132,23 @@ var interpreter = {
 			l = returnData[1];
 		}
 
+		// Both of these are kind of the same thing, and there is
+		// Not a lot I can do to not repeat myself.
 		if (settings.fastMode) {
 			for (l = l; l < code.length; l++) {
-				l = interpreter.executeLine(code, l);
-
-				if (interpreter.gotoTimes > 500) {
+				var executedResult = interpreter.executeLine(code, l);
+				if (executedResult[1] == "kill") {
 					break;
+				}
+				// Set l the returned line from the command.
+				// It is the default one that we sent if not changed.
+				l = executedResult[0];
+				console.log(l)
+
+				// A little bit of safety if something goes wrong.
+				if (interpreter.gotoTimes > 500) {
 					terminal.write("Goto exceeded 500, stopping program for safety.");
+					break;
 				}
 			}
 		} else {
@@ -147,7 +157,13 @@ var interpreter = {
 					clearInterval(loop);
 					return;
 				} else {
-					l = interpreter.executeLine(code, l);
+					var executedResult = interpreter.executeLine(code, l);
+					if (executedResult[1] == "kill") {
+						clearInterval(loop);
+					}
+
+					l = executedResult[0];
+
 					l++;
 				}
 			}, 1);
@@ -177,7 +193,6 @@ function parseString(string) {
 			interpreter.tryVariable,
 			tryFunction
 		));
-		console.log(execute.length);
 	}
 }
 
