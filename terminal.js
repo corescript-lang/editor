@@ -6,7 +6,7 @@ var terminal = {
 	defaultShell: ":",
 
 	message: function(string) {
-		terminal.content.innerHTML += "<span class='line'>" + string + "</span>";
+		terminal.content.innerHTML += "<span>" + string + "</span>";
 	},
 
 	ask: function(shell, callback) {
