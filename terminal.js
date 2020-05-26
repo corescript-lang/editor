@@ -5,8 +5,8 @@ var terminal = {
 	beforeInput: document.getElementById("beforeInput"),
 	defaultShell: ":",
 
-	message: function(string) {
-		terminal.content.innerHTML += "<span class='line'>" + string + "</span>";
+	message: function(string, className) {
+		terminal.content.innerHTML += "<span class='" + className + "'>" + string + "</span>";
 	},
 
 	ask: function(shell, callback) {
@@ -22,8 +22,7 @@ var terminal = {
 	},
 
 	return: function() {
-		terminal.message(terminal.beforeInput.innerHTML + terminal.input.value);
-
+		terminal.message(terminal.beforeInput.innerHTML + terminal.input.value, "line");
 	},
 
 	// Reset default input handler, prompt text,
@@ -41,13 +40,22 @@ var terminal = {
 					compile(getUserCode());
 				} else if (this.value == "fast") {
 					settings.fastMode = true;
-					terminal.message("Speed set to fast.");
+					terminal.message("Speed set to fast.", "line");
 				} else if (this.value == "slow") {
 					settings.fastMode = false;
-					terminal.message("Speed set to slow.");
+					terminal.message("Speed set to slow.", "line");
 				} else if (this.value == "memory") {
-					terminal.message(JSON.stringify(memory));
-				}
+					terminal.message(JSON.stringify([
+						interpreter.variables,
+						interpreter.labels,
+						interpreter.label,
+						interpterer.gotoLines
+					]), "line");
+				} else if (this.value == "clear") {
+					while (terminal.content.lastChild) {
+						terminal.content.removeChild(terminal.content.lastChild);
+					}
+			   }
 			}
 		};
 	}
@@ -63,5 +71,5 @@ window.onload = function () {
 
 	terminal.message(`
 		Corescript Html5 Terminal, type run.
-	`);
+	`, "line");
 }

@@ -5,19 +5,9 @@ var packages = [
 		execute: function(line, parts, l) {
 			var lineLength = line.length;
 
-			// If case, or input, parse third part
-			var stringParsed;
-			switch (parts[0]) {
-				case "var":
-				case "input":
-				case "set":
-					stringParsed = parseString(parts[3]);
-					break;
-			}
-
 			switch (parts[0]) {
 				case language["print"].t:
-					terminal.message(parseString(parts[1]));
+					terminal.message(parseString(parts[1]), "text");
 					return [l];
 
 				case language["if"].t:
@@ -42,12 +32,12 @@ var packages = [
 					return [l];
 
 				case language["var"].t:
-					interpreter.variables[parts[1]] = parseString(stringParsed);
+					interpreter.variables[parts[1]] = parseString(parts[3]);
 					return [l];
 
 				case language["input"].t:
 					// Create call back to the interpreter
-					terminal.ask(stringParsed, function(output) {
+					terminal.ask(parseString(parts[3]), function(output) {
 						interpreter.variables[parts[1]] = output;
 						execute(getUserCode(), [true, l + 1]);
 					});
@@ -55,7 +45,7 @@ var packages = [
 					return [l];
 
 				case language["set"].t:
-					interpreter.variables[parts[1]] = parseString(stringParsed);
+					interpreter.variables[parts[1]] = parseString(parts[3]);
 					return [l];
 
 				case language["goto"].t:
@@ -93,7 +83,24 @@ var packages = [
 			}
 
 			// Nothing worked, signal error
-			return [-1, "comd err"];
+			// In this case, the second part is ignored.
+			return [-1, ""];
+		}
+	},
+	{
+		execute: function(line, parts, l) {
+			//var parts = parseUntil(line, 2);
+			//.log(parts)
+			switch (parts[0]) {
+				case "add":
+					console.log(l)
+					var variable = interpreter.variables[parts[1]];
+					interpreter.variables[parts[1]][variable.length - 1] = parseString(parts[2]);
+
+					return [l];
+			}
+
+			return [-1, ""];
 		}
 	}
 ]
@@ -112,7 +119,7 @@ function tryPackage(line, parts, l) {
 	}
 
 	// No packages worked, throw unknown error
-	terminal.message("Error on line " + l + ": " + line);
+	terminal.message("Error on line " + l + ": " + line, "line");
 
 	return [l];
 }
@@ -147,7 +154,7 @@ function tryFunction(parts) {
 
 		// Regular string functions
 		case "len":
-			return tryVariable(parts[1]).length;
+			return interpreter.tryVariable(parts[1]).length;
 
 		default:
 			return false;

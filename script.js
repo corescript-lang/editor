@@ -109,6 +109,7 @@ var interpreter = {
 	run: function(code, returnData) {
 		var l;
 		if (!returnData[0]) {
+			interpreter.gotoTimes = 0;
 			interpreter.labels = {};
 			interpreter.variables = {
 				"space": " ",
@@ -140,14 +141,14 @@ var interpreter = {
 				if (executedResult[1] == "kill") {
 					break;
 				}
+				
 				// Set l the returned line from the command.
 				// It is the default one that we sent if not changed.
 				l = executedResult[0];
-				console.log(l)
 
 				// A little bit of safety if something goes wrong.
 				if (interpreter.gotoTimes > 500) {
-					terminal.write("Goto exceeded 500, stopping program for safety.");
+					terminal.message("Goto exceeded 500, stopping program for safety.", "line");
 					break;
 				}
 			}
@@ -240,21 +241,30 @@ function colonData(string) {
 // Split line until we reach a certain point. This is done because in
 // Corescript 0, scrings are always the last thing, with an exception
 // for if statements "if name = Jim:stop"
-function parseUntil(string) {
+function parseUntil(string, customUntil) {
 	var command = {
 		parts: [],
+		string: "",
 		ignore: false,
 	}
 
 	var reading = "";
 	var addPart = 0;
 
-	// A messy solution for telling checker to ignore
-	var until = -1;
+	// Simple way to set until to customUntil if it
+	// is defined.
+	var until;
+	if (customUntil != undefined) {
+		until = customUntil;
+	} else {
+		// A messy solution for telling checker to ignore
+		until = -1;
+	}
 
 	if (string == "" || string[0] == '#' || string[0] == ":") {
 		command.ignore = true;
 	} else {
+		var inString = false;
 		for (var c = 0; c < string.length; c++) {
 
 			// We only have to parse by space for this
@@ -271,6 +281,7 @@ function parseUntil(string) {
 			}
 
 			// Append char to reading
+			// Addpart = 2 means that we don't append char
 			if (addPart != 2) {
 				reading += string[c];
 			}
@@ -283,8 +294,6 @@ function parseUntil(string) {
 				// To check for the string, since the string is
 				// always at the last part of the line
 				if(command.parts.length == 1) {
-
-
 					var tryFindCommand = language[reading];
 					if (tryFindCommand != undefined) {
 						until = language[reading].min - 1;
