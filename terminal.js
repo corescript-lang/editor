@@ -11,12 +11,12 @@ var terminal = {
 
 	ask: function(shell, callback) {
 		terminal.beforeInput.innerHTML = shell;
+		terminal.input.value = "";
 
 		terminal.input.onkeydown = function(event) {
 			if (event.key == "Enter") {
-
-				callback(terminal.input.value);
 				terminal.reset();
+				callback(terminal.input.value);
 			}
 		}
 	},
@@ -49,7 +49,7 @@ var terminal = {
 						interpreter.variables,
 						interpreter.labels,
 						interpreter.label,
-						interpterer.gotoLines
+						interpreter.gotoLines
 					]), "line");
 				} else if (this.value == "clear") {
 					while (terminal.content.lastChild) {

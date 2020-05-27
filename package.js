@@ -39,10 +39,10 @@ var packages = [
 					// Create call back to the interpreter
 					terminal.ask(parseString(parts[3]), function(output) {
 						interpreter.variables[parts[1]] = output;
-						execute(getUserCode(), [true, l + 1]);
+						interpreter.run(getUserCode(), [true, l + 1]);
 					});
 
-					return [l];
+					return [-1, "kill"];
 
 				case language["set"].t:
 					interpreter.variables[parts[1]] = parseString(parts[3]);
