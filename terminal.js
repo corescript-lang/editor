@@ -5,8 +5,12 @@ var terminal = {
 	beforeInput: document.getElementById("beforeInput"),
 	defaultShell: ":",
 
+	// Change class to work as as display block or not. (line/text)
 	message: function(string, className) {
-		terminal.content.innerHTML += "<span class='" + className + "'>" + string + "</span>";
+		var span = document.createElement("span");
+		span.className = className;
+		span.innerHTML = string;
+		terminal.content.appendChild(span);
 	},
 
 	ask: function(shell, callback) {

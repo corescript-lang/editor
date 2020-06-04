@@ -126,16 +126,18 @@ function tryPackage(line, parts, l) {
 
 // Try to parse a raw "function"
 function tryFunction(parts) {
-	var min, max;
 	switch (parts[0]) {
-		// Test for number functions
-		case "add":
-		case "rand":
-		case "sub":
-		case "mult":
-		case "div":
-			min = Number(interpreter.tryVariable(parts[1]));
-			max = Number(interpreter.tryVariable(parts[2]));
+		case "len":
+			return interpreter.tryVariable(parts[1]).length;
+	}
+
+	var min, max;
+	if (parts.length > 2) {
+		max = Number(interpreter.tryVariable(parts[2]));
+	}
+
+	if (parts.length > 1) {
+		min = Number(interpreter.tryVariable(parts[1]));
 	}
 
 	switch (parts[0]) {
@@ -151,12 +153,9 @@ function tryFunction(parts) {
 			return min % max;
 		case "rand":
 			return Math.floor(Math.random() * max) + min;
-
-		// Regular string functions
-		case "len":
-			return interpreter.tryVariable(parts[1]).length;
-
+		case "sin":
+			return Math.sin(min);
 		default:
-			return false;
+			return -1;
 	}
 }

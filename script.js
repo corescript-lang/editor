@@ -141,26 +141,26 @@ var interpreter = {
 				if (executedResult[1] == "kill") {
 					break;
 				}
-				
+
 				// Set l the returned line from the command.
 				// It is the default one that we sent if not changed.
 				l = executedResult[0];
 
 				// A little bit of safety if something goes wrong.
-				if (interpreter.gotoTimes > 500) {
-					terminal.message("Goto exceeded 500, stopping program for safety.", "line");
+				if (interpreter.gotoTimes > 1000) {
+					terminal.message("Goto exceeded 1000, stopping program for safety.", "line");
 					break;
 				}
 			}
 		} else {
 			interpreter.loop = setInterval(function() {
 				if (l == code.length) {
-					clearInterval(loop);
+					clearInterval(interpreter.loop);
 					return;
 				} else {
 					var executedResult = interpreter.executeLine(code, l);
 					if (executedResult[1] == "kill") {
-						clearInterval(loop);
+						clearInterval(interpreter.loop);
 					}
 
 					l = executedResult[0];
@@ -219,7 +219,7 @@ function parseRaw(raw, variableParser, functionParser) {
 	var tryFunctionParts = parseUntil(raw).parts;
 	var tryOutput = functionParser(tryFunctionParts);
 
-	if (!tryOutput) {
+	if (tryOutput == -1) {
 		return variableParser(raw, tryBit);
 	} else {
 		return tryOutput;
