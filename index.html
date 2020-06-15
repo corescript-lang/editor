@@ -18,13 +18,13 @@ goto fib
 print Bottles of beer (Only 20)
 goto beer
 
-stop
+goto kill
 
 :count
 var i = 0
 :countLoop
 if i = 10:kill1
-i++
+set i = (add i 1)
 print (i)
 goto countLoop
 :kill1
@@ -59,6 +59,8 @@ print (beers) bottles of beer on the wall
 goto top
 :kill3
 return beer
+
+:kill
 </textarea>
 		<div id="terminal">
 			<p id="content"></p>
