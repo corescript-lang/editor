@@ -7,7 +7,7 @@ var packages = [
 
 			switch (parts[0]) {
 				case language["print"].t:
-					terminal.message(parseString(parts[1]), "text");
+					terminal.message(parseString(parts[1]), "line");
 					return [l];
 
 				case language["if"].t:
