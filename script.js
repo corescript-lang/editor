@@ -147,8 +147,8 @@ var interpreter = {
 				l = executedResult[0];
 
 				// A little bit of safety if something goes wrong.
-				if (interpreter.gotoTimes > 1000) {
-					terminal.message("Goto exceeded 1000, stopping program for safety.", "line");
+				if (interpreter.gotoTimes > 20000) {
+					terminal.message("Goto exceeded 20000, stopping program for safety.", "line");
 					break;
 				}
 			}
@@ -179,7 +179,7 @@ function getUserCode() {
 
 // Parse entire string
 function parseString(string) {
-	var parseRegex = /\(([^\(\)]+)\)/gm;
+	var parseRegex = /\[([^\(\)]+)\]/gm;
 
 	// Execute until no more variables are found
 	var execute = [1];
