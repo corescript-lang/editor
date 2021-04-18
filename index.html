@@ -15,7 +15,7 @@ goto count
 print Fibonacci Sequence:
 goto fib
 
-print Bottles of beer (Only 20)
+print Bottles of beer [Only 20]
 goto beer
 
 goto kill
@@ -24,8 +24,8 @@ goto kill
 var i = 0
 :countLoop
 if i = 10:kill1
-set i = (add i 1)
-print (i)
+set i = [add i 1]
+print [i]
 goto countLoop
 :kill1
 return count
@@ -34,14 +34,14 @@ return count
 :fib
 var previous = 1
 var number = 0
-var temp = (blank)
+var temp = [blank]
 
 :fibLoop
 if number > 50:kill2
-print (number)
-set temp = (add number previous)
-set previous = (number)
-set number = (temp)
+print [number]
+set temp = [add number previous]
+set previous = [number]
+set number = [temp]
 goto fibLoop
 :kill2
 return fib
@@ -51,11 +51,11 @@ return fib
 var beers = 99
 :top
 if beers = 79:kill3
-print (beers) bottles of beer on the wall
-print (beers) bottles of beer
+print [beers] bottles of beer on the wall
+print [beers] bottles of beer
 print Take one down, pass it around
-set beers = (add beers -1)
-print (beers) bottles of beer on the wall
+set beers = [add beers -1]
+print [beers] bottles of beer on the wall
 goto top
 :kill3
 return beer
