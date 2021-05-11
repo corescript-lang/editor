@@ -129,6 +129,8 @@ function tryFunction(parts) {
 	switch (parts[0]) {
 		case "len":
 			return interpreter.tryVariable(parts[1]).length;
+		case "char":
+			return interpreter.tryVariable(parts[1])[Number(parts[2])];
 	}
 
 	var min, max;

@@ -40,6 +40,15 @@ var terminal = {
 
 				if (this.value == "run") {
 					interpreter.run(getUserCode(), [false]);
+				} else if (this.value == "help") {
+					terminal.message(
+						"run - Interpret Code<br>" +
+						"compile - Compile code for Minecraft 1.12.2<br>" +
+						"fast - set fast execution mode (may crash)<br>" +
+						"slow - set slow execution mode (won't crash, good for debug)<br>" +
+						"memory - Show interpreter memory<br>" +
+						"clear - Clear terminal",
+					"line");
 				} else if (this.value == "compile") {
 					compile(getUserCode());
 				} else if (this.value == "fast") {
@@ -60,13 +69,15 @@ var terminal = {
 						terminal.content.removeChild(terminal.content.lastChild);
 					}
 			   }
+
+			   terminal.input.value = "";
 			}
 		};
 	}
 }
 
 
-window.onload = function () {
+window.onload = function() {
 	terminal.terminal.onclick = function() {
 		terminal.input.focus();
 	}
@@ -74,6 +85,6 @@ window.onload = function () {
 	terminal.reset();
 
 	terminal.message(`
-		Corescript Html5 Terminal, type run.
+		Corescript Html5 Terminal, type run or help.
 	`, "line");
 }
